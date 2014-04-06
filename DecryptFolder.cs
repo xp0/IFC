@@ -16,12 +16,6 @@ namespace IFC
 
         public override void runOperation()
         {
-            // check dirs
-            //      - find all source subdirs
-            //      - verify/create each subdir in destination dir
-
-            // find all files in source folder 
-            // run command for file, output to destination dir
 
             Logger.log(logFile, "Running Decrypt Operation");
             Logger.log(logFile, "source: " + SourceDir);
@@ -33,16 +27,17 @@ namespace IFC
 
         }
 
+
+
         private void findAndDecrypt()
         {
-            /* build file map */
             Logger.log(logFile, "Decrypting files");
-            String filePath=null;
+            String filePath = null;
+            bool fileStatus = true;
 
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            startInfo.FileName = EncExePath;
+            long filesDecriptedInfo = 0;
+            long decriptionProcessErrorsInfo = 0;
+            long filesSkippedInfo = 0;
 
             try
             {
@@ -57,37 +52,44 @@ namespace IFC
                         String relativePath = fileNameNoHash.Remove(fileNameNoHash.IndexOf(SourceDir), SourceDir.Length);
 
                         /* decrypt */
-                        startInfo.Arguments = " -d -p " + Password + " -o \"" + DestDir + relativePath + "\" \"" + filePath + "\"";
-                        Logger.log(logFile, "Decrypting: '" + filePath + "' to '" + DestDir + relativePath +"'");
-                        try
-                        {
-                            process.StartInfo = startInfo;
-                            process.Start();
-                        }
-                        catch (Exception err)
-                        {
-                            Logger.logError(logFile,err.Message);
-                        }
+                       
+                        Logger.log(logFile, "Decrypting: '" + filePath + "' to '" + DestDir + relativePath + "'");
+                        fileStatus = FileEncryptor.decrypt(filePath, DestDir + relativePath);
+                        if (fileStatus)
+                        { filesDecriptedInfo++;  }
+                        else
+                        { decriptionProcessErrorsInfo++;  }
                     }
                     else
                     {
                         Logger.log(logFile, "Skipping file due to invalid hash length:" + filePath);
+                        filesSkippedInfo++;
                     }
                 }
             }
             catch (Exception e)
             {
-                if (filePath!=null)
+                if (filePath != null)
                 {
                     Logger.logError(logFile, "Cannot access \"" + filePath.Remove(filePath.IndexOf(SourceDir), SourceDir.Length)
                                 + "\". File will be skipped. Error details:" + e.Message);
                 }
                 else
                 {
-                    Logger.logError(logFile, e.Message);
+                    Logger.logError(logFile, "File will be skipped. Error details:" + e.Message);
                 }
+                filesSkippedInfo++;
             }
 
+            Logger.log(logFile, "");
+            Logger.log(logFile, "----------------------------");
+            Logger.log(logFile, "Total files processed: " + (filesDecriptedInfo + decriptionProcessErrorsInfo + filesSkippedInfo));
+            Logger.log(logFile, "Files decrypted: " + filesDecriptedInfo);
+            Logger.log(logFile, "Decryption process errors: " + decriptionProcessErrorsInfo);
+            Logger.log(logFile, "Files skipped: " + filesSkippedInfo);
+
         }
+
+        
     }
 }

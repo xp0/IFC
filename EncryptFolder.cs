@@ -88,11 +88,95 @@ namespace IFC
 
             /* if true a file waas updated. 
              * indicates that the old version of the encrypted file should be removed from destination dir */
-            bool delCommandReq; 
+            bool delCommandReq;
+            bool encryptStatus = true;
 
             /* file counters for logging */
             long newFileCountInfo=0;
             long changedFileCountInfo=0;
+
+            /* diff the tables */
+            foreach (String ks in sourceFileListHT.Keys)
+            {
+                addCommandReq = false;
+                delCommandReq = false;
+
+                if (destinationFileListHT.ContainsKey(ks))
+                {
+                    if (!sourceFileListHT[ks].Equals(destinationFileListHT[ks].ToString()))
+                    {
+                        /* hashes are different */
+                        addCommandReq = true;
+                        delCommandReq = true;
+                        changedFileCountInfo++;
+                    }
+                    else
+                    {
+                        Logger.log(logFile, "No change:" + ks);
+                    }
+                }
+                else
+                {
+                    /* file is not there */
+                    addCommandReq = true;
+                    newFileCountInfo++;
+                }
+
+                if (addCommandReq)
+                {
+                    if (delCommandReq)
+                    { Logger.log(logFile, "Change detected:" + ks); }
+                    else
+                    { Logger.log(logFile, "New File detected:" + ks); }
+
+                    //startInfo.Arguments = " -e -p " + Password + " -o \"" + DestDir + ks + "." + sourceFileListHT[ks] + "\" \"" + SourceDir + ks + "\"";
+                    encryptStatus = FileEncryptor.encrypt(SourceDir + ks, DestDir + ks + "." + sourceFileListHT[ks]);
+
+                    if(encryptStatus) {
+                        if (delCommandReq)
+                        {
+                                String oldFileName = DestDir + ks + "." + destinationFileListHT[ks];
+                                Logger.log(logFile, "Remove old file: " + oldFileName);
+                                try
+                                {
+                                    File.Delete(oldFileName);
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.logError(logFile, "ERROR cannot remove old file: " + oldFileName + " err details:" + e.Message);
+                                }
+                        }
+                    }
+                    else
+                    {
+                        Logger.logError(logFile, "Encryption status is not succesful for source file:'" + SourceDir + ks +"'");
+                    }
+                }
+
+            }
+
+            Logger.log(logFile, "");
+            Logger.log(logFile, "----------------------------");
+            Logger.log(logFile, "Total files encrypted: " + (newFileCountInfo+changedFileCountInfo) );
+            Logger.log(logFile, "New Files: " + newFileCountInfo);
+            Logger.log(logFile, "Changed Files: " + changedFileCountInfo);
+        }
+
+        /// <summary>
+        /// Compare the source and destination file table and find and encrypt all new or changed files (different hash)
+        /// </summary>
+        private void findAndEncrypt2()
+        {
+            /* if true create encrypted version of the source file */
+            bool addCommandReq;
+
+            /* if true a file waas updated. 
+             * indicates that the old version of the encrypted file should be removed from destination dir */
+            bool delCommandReq;
+
+            /* file counters for logging */
+            long newFileCountInfo = 0;
+            long changedFileCountInfo = 0;
 
             System.Diagnostics.Process process = new System.Diagnostics.Process();
             System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
@@ -133,7 +217,7 @@ namespace IFC
                     { Logger.log(logFile, "New File detected:" + ks); }
 
                     startInfo.Arguments = " -e -p " + Password + " -o \"" + DestDir + ks + "." + sourceFileListHT[ks] + "\" \"" + SourceDir + ks + "\"";
-                  
+
                     try
                     {
                         process.StartInfo = startInfo;
@@ -174,10 +258,11 @@ namespace IFC
 
             Logger.log(logFile, "");
             Logger.log(logFile, "----------------------------");
-            Logger.log(logFile, "Total files encrypted: " + (newFileCountInfo+changedFileCountInfo) );
+            Logger.log(logFile, "Total files encrypted: " + (newFileCountInfo + changedFileCountInfo));
             Logger.log(logFile, "New Files: " + newFileCountInfo);
             Logger.log(logFile, "Changed Files: " + changedFileCountInfo);
         }
+
 
 
         private void printTable(Hashtable table)
@@ -188,9 +273,7 @@ namespace IFC
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+
         public override void runOperation()
         {
             Logger.log(logFile, "Running Encrypt Operation");

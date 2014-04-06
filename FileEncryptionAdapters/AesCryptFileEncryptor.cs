@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,9 +14,8 @@ namespace IFC
 
         public AesCryptFileEncryptor()
         {
-            Logger.log(logFile, "Creating AesCryptFileEncryptor");
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            process = new System.Diagnostics.Process();
+            startInfo = new System.Diagnostics.ProcessStartInfo();
             startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
             startInfo.FileName = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + "\\aescrypt.exe";
         }
@@ -23,9 +23,9 @@ namespace IFC
         public AesCryptFileEncryptor(String _encExePath)
             : this()
         {
-            Logger.log(logFile, "AesCryptFileEncryptor exe path set to:" + _encExePath);
             startInfo.FileName = _encExePath;
         }
+
 
 
         public override bool encrypt(string sourceFile, string destinationFile)
@@ -50,14 +50,30 @@ namespace IFC
                     Logger.logError(logFile, "Exit code is not 0 for command args: " + startInfo.Arguments);
                     status = false;
                 }
+                if (!File.Exists(destinationFile))
+                {
+                    Logger.logError(logFile, "Encrypted file cannot be found: " + destinationFile);
+                    status = false;
+                }
+                else
+                {
+                    Logger.log(logFile, "File exists " + destinationFile);
+                }
+
             }
             return status;
         }
 
+        /// <summary>
+        /// Decrypt files using aescrypt
+        /// </summary>
+        /// <param name="sourceFile">fully qualified file path to encrypt</param>
+        /// <param name="destinationFile">fully qualified output (encrypted) file</param>
+        /// <returns></returns>
         public override bool decrypt(string sourceFile, string destinationFile)
         {
             bool status = true;
-            startInfo.Arguments = " -d -p " + Password + " -o \"" + destinationFile + "\"";
+            startInfo.Arguments = " -d -p " + Password + " -o \"" + destinationFile + "\" \"" + sourceFile + "\"";
             try
             {
                 process.StartInfo = startInfo;
@@ -67,6 +83,23 @@ namespace IFC
             {
                 Logger.logError(logFile, err.Message);
                 status = false;
+            }
+            finally {
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    Logger.logError(logFile, "Exit code is not 0 for command args: " + startInfo.Arguments);
+                    status = false;
+                }
+                if (!File.Exists(destinationFile))
+                {
+                    Logger.logError(logFile, "Decrypted file cannot be found: " + destinationFile);
+                    status = false;
+                }
+                else
+                {
+                    Logger.log(logFile, "File exists " + destinationFile);
+                }
             }
             return status;
         }

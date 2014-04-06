@@ -68,8 +68,12 @@ namespace IFC
             folderOp.logFile = logFile;
 
             System.Console.WriteLine("Log File:" + logFile);
-            folderOp.Password = args[4];
 
+            FileEncryptor fEnc = new AesCryptFileEncryptor();
+            fEnc.logFile = logFile;
+            fEnc.Password       = args[4];
+            folderOp.Password   = args[4];
+            folderOp.FileEncryptor = fEnc;
 
             folderOp.EncExePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + "\\aescrypt.exe";
             if (!File.Exists(folderOp.EncExePath))

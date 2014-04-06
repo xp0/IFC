@@ -59,11 +59,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AesCryptFileEncryptor.cs" />
-    <Compile Include="FileEncryptor.cs" />
+    <Compile Include="FileEncryptionAdapters\AesCryptFileEncryptor.cs" />
+    <Compile Include="FileEncryptionAdapters\FileEncryptor.cs" />
     <Compile Include="FolderOperation.cs" />
     <Compile Include="DecryptFolder.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="Utils\Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EncryptFolder.cs" />
