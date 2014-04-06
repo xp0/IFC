@@ -63,6 +63,7 @@
     <Compile Include="FileEncryptionAdapters\FileEncryptor.cs" />
     <Compile Include="FolderOperation.cs" />
     <Compile Include="DecryptFolder.cs" />
+    <Compile Include="Utils\HashAlgo.cs" />
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

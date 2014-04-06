@@ -7,11 +7,20 @@ using System.Threading.Tasks;
 
 namespace IFC
 {
+    /// <summary>
+    /// File encryption adapter for AES Crypt - Console binary (aescrypt.exe).
+    /// URL https://www.aescrypt.com/download/ 
+    /// 
+    /// </summary>
     class AesCryptFileEncryptor : FileEncryptor
     {
         System.Diagnostics.Process process;
         System.Diagnostics.ProcessStartInfo startInfo;
 
+
+        /// <summary>
+        /// New File encryption adapter for AES Crypt.
+        /// </summary>
         public AesCryptFileEncryptor()
         {
             process = new System.Diagnostics.Process();
@@ -20,14 +29,25 @@ namespace IFC
             startInfo.FileName = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + "\\aescrypt.exe";
         }
 
-        public AesCryptFileEncryptor(String _encExePath)
+        /// <summary>
+        /// New File encryption adapter for AES Crypt.
+        /// </summary>
+        /// <param name="encExePath">AES Crypt binary location</param>
+        public AesCryptFileEncryptor(String encExePath)
             : this()
         {
-            startInfo.FileName = _encExePath;
+            startInfo.FileName = encExePath;
         }
 
 
 
+
+        /// <summary>
+        /// Encrypt source file and store the output to destination file.
+        /// </summary>
+        /// <param name="sourceFile">Fully quallified file name of the input file</param>
+        /// <param name="destinationFile">Fully qualified file name of the output file</param>
+        /// <returns></returns>
         public override bool encrypt(string sourceFile, string destinationFile)
         {
             bool status = true;
@@ -47,25 +67,23 @@ namespace IFC
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                 {
-                    Logger.logError(logFile, "Exit code is not 0 for command args: " + startInfo.Arguments);
+                    Logger.logError(logFile, "Command did not finished succesfully, command args: " + startInfo.Arguments);
                     status = false;
-                }
-                if (!File.Exists(destinationFile))
-                {
-                    Logger.logError(logFile, "Encrypted file cannot be found: " + destinationFile);
-                    status = false;
-                }
-                else
-                {
-                    Logger.log(logFile, "File exists " + destinationFile);
-                }
 
+                    if (!File.Exists(destinationFile))
+                    {
+                        Logger.logError(logFile, "Encrypted file cannot be found: " + destinationFile);
+                    }
+                }
             }
             return status;
         }
 
+
+
+
         /// <summary>
-        /// Decrypt files using aescrypt
+        /// Decrypt provided source file to destination file
         /// </summary>
         /// <param name="sourceFile">fully qualified file path to encrypt</param>
         /// <param name="destinationFile">fully qualified output (encrypted) file</param>
@@ -88,17 +106,13 @@ namespace IFC
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                 {
-                    Logger.logError(logFile, "Exit code is not 0 for command args: " + startInfo.Arguments);
+                    Logger.logError(logFile, "Command did not finished succesfully, command args: " + startInfo.Arguments);
                     status = false;
-                }
-                if (!File.Exists(destinationFile))
-                {
-                    Logger.logError(logFile, "Decrypted file cannot be found: " + destinationFile);
-                    status = false;
-                }
-                else
-                {
-                    Logger.log(logFile, "File exists " + destinationFile);
+
+                    if (!File.Exists(destinationFile))
+                    {
+                        Logger.logError(logFile, "Decrypted file cannot be found: " + destinationFile);
+                    }
                 }
             }
             return status;

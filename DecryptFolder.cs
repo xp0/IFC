@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IFC.Utils;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -12,8 +13,6 @@ namespace IFC
     class DecryptFolder : FolderOperation
     {
 
-        MD5 hashAlgo = MD5.Create();
-
         public override void runOperation()
         {
 
@@ -22,9 +21,7 @@ namespace IFC
             Logger.log(logFile, "destination: " + DestDir);
 
             checkDirStructure();
-
             findAndDecrypt();
-
         }
 
 
@@ -44,17 +41,17 @@ namespace IFC
                 foreach (String f in System.IO.Directory.EnumerateFiles(SourceDir, "*", System.IO.SearchOption.AllDirectories))
                 {
                     filePath = f;
-                    /* extract name and hash */
                     String hashFromFileName = filePath.Substring(filePath.LastIndexOf(".") + 1);
-                    if (hashFromFileName.Length == 32)
+
+                    if ( hashFromFileName.Length == HashAlgo.LENGTH )
                     {
                         String fileNameNoHash = filePath.Substring(0, filePath.Length - hashFromFileName.Length - 1);
                         String relativePath = fileNameNoHash.Remove(fileNameNoHash.IndexOf(SourceDir), SourceDir.Length);
 
                         /* decrypt */
-                       
                         Logger.log(logFile, "Decrypting: '" + filePath + "' to '" + DestDir + relativePath + "'");
                         fileStatus = FileEncryptor.decrypt(filePath, DestDir + relativePath);
+
                         if (fileStatus)
                         { filesDecriptedInfo++;  }
                         else

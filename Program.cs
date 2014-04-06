@@ -20,8 +20,6 @@ namespace IFC
         /// <param name="password">password value</param>
         static void Main(string[] args)
         {
-
-
             System.Console.WriteLine("Arguments count :" + args.Length);
 
             foreach (String arg in args)
@@ -29,7 +27,7 @@ namespace IFC
                 System.Console.WriteLine("arg: " + arg);
             }
 
-
+            /* source and destination dirs */
             String sourceDir;
             String destDir;
 
@@ -44,6 +42,7 @@ namespace IFC
                 destDir = args[2];
             }
 
+            /* operation mode  */
             FolderOperation folderOp;
             String logFile = "";
 
@@ -60,32 +59,32 @@ namespace IFC
             else
             {
                 System.Console.WriteLine("Unsuported folder operation: " + args[0]);
+                /* todo: print help */
                 return;
             }
-            folderOp.SourceDir = sourceDir;
-            folderOp.DestDir = destDir;
-
-            folderOp.logFile = logFile;
 
             System.Console.WriteLine("Log File:" + logFile);
 
+            folderOp.SourceDir = sourceDir;
+            folderOp.DestDir = destDir;
+            folderOp.logFile = logFile;
+
+
+            /* encryption adapter */
             FileEncryptor fEnc = new AesCryptFileEncryptor();
             fEnc.logFile = logFile;
-            fEnc.Password       = args[4];
-            folderOp.Password   = args[4];
+            fEnc.Password = args[4];
             folderOp.FileEncryptor = fEnc;
 
-            folderOp.EncExePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + "\\aescrypt.exe";
-            if (!File.Exists(folderOp.EncExePath))
+            if (!File.Exists(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + "\\aescrypt.exe"))
             {
-                System.Console.WriteLine("Can't find " + folderOp.EncExePath);
-            }
-            else
-            {
-                System.Console.WriteLine("Exe is " + folderOp.EncExePath);
-                folderOp.runOperation();
+                System.Console.WriteLine("Can't find aescrypt.exe at" + System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
             }
 
+            /* run folder operation */
+            folderOp.runOperation();
+
+            /* finished */
             System.Console.WriteLine("Finished.");
             System.Console.ReadKey();
         }

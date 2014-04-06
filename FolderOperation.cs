@@ -11,8 +11,8 @@ namespace IFC
     {
         public String logFile       { get; set; }
 
-        public String EncExePath    { get; set; }   //  to be moved in fileEncryptor 
-        public String Password { get; set; }   //  to be moved in fileEncryptor 
+        //public String EncExePath    { get; set; }   //  to be moved in fileEncryptor 
+        //public String Password { get; set; }   //  to be moved in fileEncryptor 
 
         public String SourceDir     { get; set; }
         public String DestDir       { get; set; }
